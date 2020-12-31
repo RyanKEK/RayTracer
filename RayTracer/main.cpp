@@ -554,7 +554,6 @@ int			main(int ac, char* av[])
 		SDL_Rect src = { 0 , 0, nx, ny };
 		SDL_Rect dst = { 0, 0, W, H };
 		render_surface(sdl.ren, sdl.screen_surf, &src, NULL);
-#ifdef THREADS
 		for (int y = 0; y <= ny; y++)
 		{
 			for (int x = 0; x < nx; x++)
@@ -649,4 +648,3 @@ int			main(int ac, char* av[])
 //	}
 //	return (0);
 //}
-
