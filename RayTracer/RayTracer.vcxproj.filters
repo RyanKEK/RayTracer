@@ -71,4 +71,7 @@
     <Text Include="teapot.txt" />
     <Text Include="MyModel.obj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="chlendick.mod" />
+  </ItemGroup>
 </Project>

@@ -4,8 +4,8 @@
 
 #define W 1600
 #define H 900
-#define RENDERW 160
-#define RENDERH 90
+#define RENDERW 800
+#define RENDERH 450
 #include <SDL.h>
 //#include <SDL_image.h>
 #include <stdio.h>

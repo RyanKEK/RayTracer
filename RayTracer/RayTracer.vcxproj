@@ -177,6 +177,9 @@
     <Text Include="cube.txt" />
     <Text Include="teapot.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="chlendick.mod" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

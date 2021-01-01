@@ -45,16 +45,16 @@ Model::Model(Vec3d pos, std::string file_path, std::shared_ptr<Material> mat) : 
 		{
 			outfile << "f ";
 			str = str.substr(str.find_first_of(' ') + 1);
-			a = std::stod(str, &sz);
+			std::cout << str << std::endl;
+			a = std::stod(str, &sz) - 1;
 			outfile << (int)a << " ";
 			str = str.substr(str.find_first_of(' ') + 1);
-			b = std::stod(str, &sz);
+			b = std::stod(str, &sz) - 1;
 			outfile << (int)b << " ";
 			str = str.substr(str.find_first_of(' ') + 1);
-			c = std::stod(str, &sz);
+			c = std::stod(str, &sz) - 1;
 			outfile << (int)c << " \n";
 			this->triangles.push_back(Triangle(vertexes[a] + pos, vertexes[b] + pos, vertexes[c] + pos));
-			
 		}
 	}
 	std::cout << "Loaded\n";

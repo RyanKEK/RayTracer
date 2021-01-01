@@ -317,7 +317,7 @@ void render_column(int xmin, int xmax, t_sdl& sdl, ShapeContainer& scene)
 	auto vertical = Vec3d(0, viewport_height, 0);
 	auto lower_left_corner = origin - horizontal / 2 - vertical / 2 - Vec3d(0, 0, focal_length);
 
-	const int samples_per_pixel = 50;
+	const int samples_per_pixel = 20;
 	Vec3d color = { 0, 0, 0 };
 	t_ray ray;
 
@@ -410,55 +410,6 @@ bool rayTriangleIntersect_func(
 	return true; // this ray hits the triangle 
 }
 
-Triangle rotate(double pitch, double roll, double yaw, Triangle tri)
-{
-
-	double cosa = cosf(yaw);
-	double sina = sinf(yaw);
-	double cosb = cosf(pitch);
-	double sinb = sinf(pitch);
-	double cosc = cosf(roll);
-	double sinc = sinf(roll);
-	double Axx = cosa * cosb;
-	double Axy = cosa * sinb * sinc - sina * cosc;
-	double Axz = cosa * sinb * cosc + sina * sinc;
-	double Ayx = sina * cosb;
-	double Ayy = sina * sinb * sinc + cosa * cosc;
-	double Ayz = sina * sinb * cosc - cosa * sinc;
-	double Azx = -sinb;
-	double Azy = cosb * sinc;
-	double Azz = cosb * cosc;
-
-	for (int i = 0; i < 3; i++) {
-		double px = tri.p1.x;
-		double py = tri.p1.x;
-		double pz = tri.p1.y;
-
-		tri.p1.x = Axx * px + Axy * py + Axz * pz;
-		tri.p1.y = Ayx * px + Ayy * py + Ayz * pz;
-		tri.p1.z = Azx * px + Azy * py + Azz * pz;
-	}
-	for (int i = 0; i < 3; i++) {
-		double px = tri.p2.x;
-		double py = tri.p2.x;
-		double pz = tri.p2.y;
-
-		tri.p2.x = Axx * px + Axy * py + Axz * pz;
-		tri.p2.y = Ayx * px + Ayy * py + Ayz * pz;
-		tri.p2.z = Azx * px + Azy * py + Azz * pz;
-	}
-	for (int i = 0; i < 3; i++) {
-		double px = tri.p3.x;
-		double py = tri.p3.x;
-		double pz = tri.p3.y;
-
-		tri.p3.x = Axx * px + Axy * py + Axz * pz;
-		tri.p3.y = Ayx * px + Ayy * py + Ayz * pz;
-		tri.p3.z = Azx * px + Azy * py + Azz * pz;
-	}
-	return (tri);
-}
-
 int			main(int ac, char* av[])
 {
 	t_sdl sdl;
@@ -504,20 +455,19 @@ int			main(int ac, char* av[])
 	std::cout << cube << std::endl;
 	std::vector<Triangle> tris;
 	tris.push_back(Triangle(Vec3d(0, 0, 0), Vec3d(0, 1, 0), Vec3d(1, 1, 0)));
-	//tris.push_back(Triangle(Vec3d(0, 0, 0), Vec3d(1, 0, 0), Vec3d(1, 1, 0)));
-	//tris.push_back(Triangle(Vec3d(0, 0, 0), Vec3d(0, 1, 0), Vec3d(1, 1, 0)));
-	//tris.push_back(Triangle(Vec3d(1, 1, 0), Vec3d(1, 0, 0), Vec3d(0, 0, 0)));
-	//tris.push_back(Triangle(Vec3d(1, 0, 1), Vec3d(1, 1, 1), Vec3d(0, 1, 1)));
-	//tris.push_back(Triangle(Vec3d(1, 0, 0), Vec3d(0, 1, 0), Vec3d(0, 0, 0)));
-	//tris.push_back(Triangle(Vec3d(0, 0, 0), Vec3d(0, 2, 0), Vec3d(2, 0, 0)));
+	tris.push_back(Triangle(Vec3d(0, 0, 0), Vec3d(1, 0, 0), Vec3d(1, 1, 0)));
+	tris.push_back(Triangle(Vec3d(0, 0, 0), Vec3d(0, 1, 0), Vec3d(1, 1, 0)));
+	tris.push_back(Triangle(Vec3d(1, 1, 0), Vec3d(1, 0, 0), Vec3d(0, 0, 0)));
+	tris.push_back(Triangle(Vec3d(1, 0, 1), Vec3d(1, 1, 1), Vec3d(0, 1, 1)));
+	tris.push_back(Triangle(Vec3d(1, 0, 0), Vec3d(0, 1, 0), Vec3d(0, 0, 0)));
+	tris.push_back(Triangle(Vec3d(0, 0, 0), Vec3d(0, 2, 0), Vec3d(2, 0, 0)));
 	scene.add(make_shared<Sphere>(Vec3d(0, -1000.5, -3), 1000.0, ground));
 	scene.add(make_shared<Sphere>(Vec3d(0, 0, -3), 0.5, center));
 	scene.add(make_shared<Sphere>(Vec3d(-1, 0, -3), 0.5, def_metal));
 	scene.add(make_shared<Sphere>(Vec3d(1, 0, -3), 0.5, def_metal));
 	scene.add(make_shared<Sphere>(Vec3d(-3, 1.5, -3), 2, def_metal));
-	scene.add(make_shared<Model>(Vec3d(0, 0, -2), "chlendick.obj", cube));
+	scene.add(make_shared<Model>(Vec3d(0, 0, -2), "chlendick.mod", cube));
 	//scene.add(make_shared<Model>(Vec3d(0, 0, -1), tris, cube));
-
 
 	if (!init_sdl(&sdl))
 		return (0);
@@ -525,7 +475,7 @@ int			main(int ac, char* av[])
 	//	std::cout << dot(normalized_vector(Vec3d{ 1, 1, 0 }), Vec3d{ 0, 1, 0 });
 	//std::vector<std::thread> threads;
 	const int num_threads = 5;
-	const int samples_per_pixel = 20;
+	const int samples_per_pixel = 100;
 
 	std::chrono::time_point<std::chrono::system_clock> StartTime;
 	std::chrono::time_point<std::chrono::system_clock> FinishTime;
@@ -554,32 +504,32 @@ int			main(int ac, char* av[])
 		SDL_Rect src = { 0 , 0, nx, ny };
 		SDL_Rect dst = { 0, 0, W, H };
 		render_surface(sdl.ren, sdl.screen_surf, &src, NULL);
-		for (int y = 0; y <= ny; y++)
-		{
-			for (int x = 0; x < nx; x++)
-			{
-#ifdef ANTIALIASING
-				color = { 0, 0, 0 };
-				for (int i = 0; i < samples_per_pixel; i++)
-				{
-					//std::cout << i << std::endl;
-					double u = (x + random_double()) / ((double)image_width - 1);
-					double v = (y + random_double()) / ((double)image_height- 1);
-					ray.direction = lower_left_corner + u * horizontal + v * vertical - origin;
-					color += ray_color(ray, scene, 50);
-
-				}
-				//log(color);
-				put_antialiased_pixel(sdl.screen_surf, x, ny - y, color, samples_per_pixel);
-#else
-				double u = x / ((double)image_width - 1);
-				double v = y / ((double)image_height - 1);
-				ray.direction = lower_left_corner + u * horizontal + v * vertical - origin;
-				color = ray_color(ray, scene, 50);
-				put_pixel(sdl.screen_surf, x, ny - y, SDL_Color{ (Uint8)(color.x * 255), (Uint8)(color.y * 255), (Uint8)(color.z * 255)});
-#endif // ANTIALIASING
-			}
-		}
+//		for (int y = 0; y <= ny; y++)
+//		{
+//			for (int x = 0; x < nx; x++)
+//			{
+//#ifdef ANTIALIASING
+//				color = { 0, 0, 0 };
+//				for (int i = 0; i < samples_per_pixel; i++)
+//				{
+//					//std::cout << i << std::endl;
+//					double u = (x + random_double()) / ((double)image_width - 1);
+//					double v = (y + random_double()) / ((double)image_height- 1);
+//					ray.direction = lower_left_corner + u * horizontal + v * vertical - origin;
+//					color += ray_color(ray, scene, 50);
+//
+//				}
+//				//log(color);
+//				put_antialiased_pixel(sdl.screen_surf, x, ny - y, color, samples_per_pixel);
+//#else
+//				double u = x / ((double)image_width - 1);
+//				double v = y / ((double)image_height - 1);
+//				ray.direction = lower_left_corner + u * horizontal + v * vertical - origin;
+//				color = ray_color(ray, scene, 50);
+//				put_pixel(sdl.screen_surf, x, ny - y, SDL_Color{ (Uint8)(color.x * 255), (Uint8)(color.y * 255), (Uint8)(color.z * 255)});
+//#endif // ANTIALIASING
+//			}
+//		}
 		int mx, my;
 		SDL_GetMouseState(&mx, &my);
 		//lightSource.x = (mx - W / 2.0) * 1000;
@@ -593,17 +543,17 @@ int			main(int ac, char* av[])
 		std::chrono::duration<double> diff = FinishTime - StartTime;
 		//std::cout << "MAIN CYCLE " << diff.count() << std::endl;
 	}
-	Vec3d orig = Vec3d(0, 0, 0);
-	Vec3d dir = Vec3d(0, 0, 1);
-	Vec3d vec1 = Vec3d(-3, -3, 1);
-	Vec3d vec2 = Vec3d(-3, 3, 1);
-	Vec3d vec3 = Vec3d(5, 3, 1);
-	Vec3d AB = (vec2 - vec1);
-	Vec3d BC = (vec3 - vec2);
-	Vec3d CA = (vec1 - vec3);
-	double t;
-	std::cout << rayTriangleIntersect(orig, dir, vec3, vec2, vec1, t) << std::endl;
-	std::cout << intersect_plane_func(AB.cross(BC).normalized(), vec1,  Vec3d(0, 0, 0) , Vec3d(0, 0, 1), t);
+	//Vec3d orig = Vec3d(0, 0, 0);
+	//Vec3d dir = Vec3d(0, 0, 1);
+	//Vec3d vec1 = Vec3d(-3, -3, 1);
+	//Vec3d vec2 = Vec3d(-3, 3, 1);
+	//Vec3d vec3 = Vec3d(5, 3, 1);
+	//Vec3d AB = (vec2 - vec1);
+	//Vec3d BC = (vec3 - vec2);
+	//Vec3d CA = (vec1 - vec3);
+	//double t;
+	//std::cout << rayTriangleIntersect(orig, dir, vec3, vec2, vec1, t) << std::endl;
+	//std::cout << intersect_plane_func(AB.cross(BC).normalized(), vec1,  Vec3d(0, 0, 0) , Vec3d(0, 0, 1), t);
 
 }
 
