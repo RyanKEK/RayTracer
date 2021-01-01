@@ -170,6 +170,7 @@
     <ClCompile Include="Vec3d.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="BlenderCube.txt" />
     <Text Include="CurrOutput.txt" />
     <Text Include="logs.txt" />
     <Text Include="MyModel.obj" />

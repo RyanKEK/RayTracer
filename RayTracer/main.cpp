@@ -13,6 +13,7 @@
 #include "Materials.h"
 #include "Model.h"
 #define ANTIALIASING
+#define THREADS
 
 Vec3d WHITE =  Vec3d(1, 1, 1);
 Vec3d RED = Vec3d(1, 0, 0);
@@ -330,7 +331,7 @@ void render_column(int xmin, int xmax, t_sdl& sdl, ShapeContainer& scene)
 	{
 		for (int x = xmin; x < xmax; x++)
 		{
-#ifdef ANTIALIASINGs
+#ifdef ANTIALIASING
 			color = { 0, 0, 0 };
 			for (int i = 0; i < samples_per_pixel; i++)
 			{
@@ -425,6 +426,7 @@ int			main(int ac, char* av[])
 	//file.open("CurrOutput.txt");
 	log_file.open("logs.txt");
 
+
 	auto viewport_height = 2.0;
 	auto viewport_width = aspect_ratio * viewport_height;
 	auto focal_length = 1.0;
@@ -461,12 +463,17 @@ int			main(int ac, char* av[])
 	tris.push_back(Triangle(Vec3d(1, 0, 1), Vec3d(1, 1, 1), Vec3d(0, 1, 1)));
 	tris.push_back(Triangle(Vec3d(1, 0, 0), Vec3d(0, 1, 0), Vec3d(0, 0, 0)));
 	tris.push_back(Triangle(Vec3d(0, 0, 0), Vec3d(0, 2, 0), Vec3d(2, 0, 0)));
-	scene.add(make_shared<Sphere>(Vec3d(0, -1000.5, -3), 1000.0, ground));
-	scene.add(make_shared<Sphere>(Vec3d(0, 0, -3), 0.5, center));
-	scene.add(make_shared<Sphere>(Vec3d(-1, 0, -3), 0.5, def_metal));
-	scene.add(make_shared<Sphere>(Vec3d(1, 0, -3), 0.5, def_metal));
-	scene.add(make_shared<Sphere>(Vec3d(-3, 1.5, -3), 2, def_metal));
-	scene.add(make_shared<Model>(Vec3d(0, 0, -2), "chlendick.mod", cube));
+	scene.add(make_shared<Sphere>(Vec3d(0, -1000.5, -3), 1000.0, def_metal));
+	//scene.add(make_shared<Sphere>(Vec3d(0, 0, -3), 0.5, center));
+	//scene.add(make_shared<Sphere>(Vec3d(-1, 0, -3), 0.5, def_metal));
+	//scene.add(make_shared<Sphere>(Vec3d(1, 0, -3), 0.5, def_metal));
+	//scene.add(make_shared<Sphere>(Vec3d(-3, 1.5, -3), 2, def_metal));
+	scene.add(make_shared<Model>(Vec3d(-2.5, 0.5, -4), "chlendick.mod", cube));
+	Model* mod = static_cast<Model*>(scene.objects[scene.objects.size() - 1].get());
+	std::cout << mod->encircling_shpere_radius << std::endl;
+	std::cout << mod->center << std::endl;
+	//scene.add(make_shared<Sphere>(Vec3d(0, 0, -2), 0.3, center));
+	scene.add(make_shared<Sphere>(mod->center + mod->pos + Vec3d(mod->encircling_shpere_radius + 1, 0, 0), mod->encircling_shpere_radius, center));
 	//scene.add(make_shared<Model>(Vec3d(0, 0, -1), tris, cube));
 
 	if (!init_sdl(&sdl))
@@ -474,6 +481,7 @@ int			main(int ac, char* av[])
 	//for (auto i = 0; i < 10; i++)
 	//	std::cout << dot(normalized_vector(Vec3d{ 1, 1, 0 }), Vec3d{ 0, 1, 0 });
 	//std::vector<std::thread> threads;
+	//const int num_threads = std::thread::hardware_concurrency();
 	const int num_threads = 5;
 	const int samples_per_pixel = 100;
 
@@ -498,38 +506,43 @@ int			main(int ac, char* av[])
 		//	th.join();
 		//}
 		//threads.clear();
+#ifdef THREADS
+
+
 		for (int i = 0; i < num_threads; i++) {
 			futures_vec.push_back(std::async(std::launch::async, render_column, i * RenderW / num_threads, (i + 1) * RenderW / num_threads, std::ref(sdl), std::ref(scene)));
 		}
+#else
+		for (int y = 0; y <= ny; y++)
+		{
+			for (int x = 0; x < nx; x++)
+			{
+#ifdef ANTIALIASING
+				color = { 0, 0, 0 };
+				for (int i = 0; i < samples_per_pixel; i++)
+				{
+					//std::cout << i << std::endl;
+					double u = (x + random_double()) / ((double)image_width - 1);
+					double v = (y + random_double()) / ((double)image_height- 1);
+					ray.direction = lower_left_corner + u * horizontal + v * vertical - origin;
+					color += ray_color(ray, scene, 50);
+
+				}
+				//log(color);
+				put_antialiased_pixel(sdl.screen_surf, x, ny - y, color, samples_per_pixel);
+#else
+				double u = x / ((double)image_width - 1);
+				double v = y / ((double)image_height - 1);
+				ray.direction = lower_left_corner + u * horizontal + v * vertical - origin;
+				color = ray_color(ray, scene, 50);
+				put_pixel(sdl.screen_surf, x, ny - y, SDL_Color{ (Uint8)(color.x * 255), (Uint8)(color.y * 255), (Uint8)(color.z * 255)});
+#endif // ANTIALIASING
+			}
+		}
+#endif // THREADS
 		SDL_Rect src = { 0 , 0, nx, ny };
 		SDL_Rect dst = { 0, 0, W, H };
 		render_surface(sdl.ren, sdl.screen_surf, &src, NULL);
-//		for (int y = 0; y <= ny; y++)
-//		{
-//			for (int x = 0; x < nx; x++)
-//			{
-//#ifdef ANTIALIASING
-//				color = { 0, 0, 0 };
-//				for (int i = 0; i < samples_per_pixel; i++)
-//				{
-//					//std::cout << i << std::endl;
-//					double u = (x + random_double()) / ((double)image_width - 1);
-//					double v = (y + random_double()) / ((double)image_height- 1);
-//					ray.direction = lower_left_corner + u * horizontal + v * vertical - origin;
-//					color += ray_color(ray, scene, 50);
-//
-//				}
-//				//log(color);
-//				put_antialiased_pixel(sdl.screen_surf, x, ny - y, color, samples_per_pixel);
-//#else
-//				double u = x / ((double)image_width - 1);
-//				double v = y / ((double)image_height - 1);
-//				ray.direction = lower_left_corner + u * horizontal + v * vertical - origin;
-//				color = ray_color(ray, scene, 50);
-//				put_pixel(sdl.screen_surf, x, ny - y, SDL_Color{ (Uint8)(color.x * 255), (Uint8)(color.y * 255), (Uint8)(color.z * 255)});
-//#endif // ANTIALIASING
-//			}
-//		}
 		int mx, my;
 		SDL_GetMouseState(&mx, &my);
 		//lightSource.x = (mx - W / 2.0) * 1000;

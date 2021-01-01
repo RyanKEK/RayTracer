@@ -9,8 +9,9 @@ class Model : public Shape
 {
 public:
 
-	std::vector<Triangle> triangles;
-
+	std::vector<Triangle>	triangles;
+	double					encircling_shpere_radius;
+	Vec3d					center;
 
 	Model(Vec3d pos, const std::vector<Triangle>& triangles, std::shared_ptr<Material> mat);
 	Model(Vec3d pos, std::string file_path, std::shared_ptr<Material> mat);

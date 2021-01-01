@@ -70,6 +70,7 @@
     <Text Include="cube.txt" />
     <Text Include="teapot.txt" />
     <Text Include="MyModel.obj" />
+    <Text Include="BlenderCube.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="chlendick.mod" />
